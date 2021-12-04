@@ -38,11 +38,23 @@ const { nextISSTimesForMyLocation } = require('./iss');
 
 // });
 
+const printNextISSTimes = (nextISSTimes)=>{
+  for (const pass of nextISSTimes) {
+    const datetime = new Date(0);
+    // console.log(datetime);
+    datetime.setUTCSeconds(pass.risetime);
+    const duration = pass.duration;
+    console.log(`Next pass at ${datetime} for ${duration} seconds`);
+  }
+
+};
+
 nextISSTimesForMyLocation((error, nextISSTimes) => {
   if (error) {
     console.log("It didn't work!" , error);
     return;
   }
   
-  console.log('It worked! Returned nextISSTimes:', nextISSTimes);
+  // console.log('It worked! Returned nextISSTimes:', nextISSTimes);
+  printNextISSTimes(nextISSTimes);
 });

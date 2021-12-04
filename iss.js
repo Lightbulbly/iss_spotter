@@ -17,6 +17,7 @@ const fetchMyIP = function(callback) {
   request("https://api.ipify.org?format=json", { json: true }, (err, res, body) => {
     if (err) {
       callback(err, null);
+      return;
     }
     // if non-200 status, assume server error
     if (res.statusCode !== 200) {
@@ -26,7 +27,6 @@ const fetchMyIP = function(callback) {
     }
     const ip = body.ip;
     // console.log(res,body);
-
     callback(null, ip);
   });
 
@@ -48,23 +48,20 @@ const fetchCoordsByIP = (ip, callback)=>{
     // console.log("POW",res);
     if (res.statusCode !== 200) {
       const msg = `Status Code ${res.statusCode} when fetching coordinates for IP. Response: ${body}`;
-      callback(Error(msg),null);
+      callback(Error(msg), null);
       return;
     }
     let data = { latitude: body.latitude, longitude: body.longitude };
     // const { latitude, longitude } = JSON.parse(body);
     // callback(null, { latitude, longitude });
-
     callback(null, data);
-    return;
+    // return;
   });
-  
-
 };
 
 
 const fetchISSFlyOverTimes = function(coordinates, callback) {
-  console.log(coordinates,callback);
+  // console.log(coordinates,callback);
   let URL = `https://iss-pass.herokuapp.com/json/?lat=${coordinates.latitude}&lon=${coordinates.longitude}`;
   // console.log(URL);
   request(URL, { json: true }, (err, res, body) => {
@@ -79,18 +76,33 @@ const fetchISSFlyOverTimes = function(coordinates, callback) {
       callback(Error(msg),null);
       return;
     }
-    
-    
     let data = body.response;
-    return callback(null, data);
+    callback(null, data);
+    // return;
   });
 
 };
 
 const nextISSTimesForMyLocation = function(callback) {
-
-  
-
+  fetchMyIP((error, ip)=>{
+    if (error) {
+      callback(error, null);
+      return;
+    }
+    fetchCoordsByIP(ip, (error, loc)=>{
+      if (error) {
+        callback(error, null);
+        return;
+      }
+      fetchISSFlyOverTimes(loc ,(error, nextPasses)=>{
+        if (error) {
+          callback(error, null);
+          return;
+        }
+        callback(null, nextPasses);
+      });
+    });
+  });
 };
 
 
